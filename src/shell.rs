@@ -1,3 +1,4 @@
+use crate::builtins;
 use crate::executor;
 use crate::parser;
 use std::io::{self, Write};
@@ -26,10 +27,13 @@ impl Shell {
             }
 
             if let Some(command) = parser::parse(&line) {
-                println!("Program: {}", command.program);
-                println!("Args: {:?}", command.args);
-                println!("------------------------------------");
-                executor::execute(&command)?;
+                // println!("Program: {}", command.program);
+                // println!("Args: {:?}", command.args);
+                // println!("------------------------------------");
+                match builtins::execute(&command) {
+                    Some(result) => result?,
+                    None => executor::execute(&command)?,
+                }
             }
         }
 
