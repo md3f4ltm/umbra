@@ -159,7 +159,37 @@ fn finish_word(tokens: &mut Vec<Token>, current_word: &mut String, word_started:
 }
 
 #[cfg(test)]
-
+// TODO: More testes needed
 mod tests {
     use super::*;
+    fn word(value: &str) -> Token {
+        Token::Word(value.to_string())
+    }
+
+    #[test]
+    fn tokenizes_simple_command() {
+        let tokens = tokenize("ls -la src").unwrap();
+        assert_eq!(tokens, vec![word("ls"), word("-la"), word("src")]);
+    }
+
+    #[test]
+    fn ignores_extra_whitespace() {
+        let tokens = tokenize(" echo    hello\tworld\n").unwrap();
+
+        assert_eq!(tokens, vec![word("echo"), word("hello"), word("world")]);
+    }
+
+    #[test]
+    fn tokenizes_double_quoted_word() {
+        let tokens = tokenize(r#"echo "hello world""#).unwrap();
+
+        assert_eq!(tokens, vec![word("echo"), word("hello world")]);
+    }
+
+    #[test]
+    fn tokenizes_single_quoted_word() {
+        let tokens = tokenize("echo 'hello world'").unwrap();
+
+        assert_eq!(tokens, vec![word("echo"), word("hello world")]);
+    }
 }

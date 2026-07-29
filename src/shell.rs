@@ -25,8 +25,6 @@ impl Shell {
                 }
             }
         }
-
-        Ok(())
     }
 
     fn read_command(&self) -> io::Result<Option<Command>> {

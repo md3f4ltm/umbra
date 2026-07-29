@@ -61,8 +61,47 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_simple_command() {}
+    fn parses_simple_command() {
+        let command = parse("ls -la src").unwrap().unwrap();
+
+        assert_eq!(
+            command,
+            Command {
+                program: "ls".to_string(),
+                args: vec!["-la".to_string(), "src".to_string()],
+            }
+        );
+    }
 
     #[test]
-    fn empty_input_returns_none() {}
+    fn empty_input_returns_none() {
+        assert_eq!(parse("").unwrap(), None);
+        assert_eq!(parse("        ").unwrap(), None);
+        assert_eq!(parse("\n\t").unwrap(), None);
+    }
+
+    #[test]
+    fn parses_no_arguments() {
+        let command = parse("pwd").unwrap().unwrap();
+
+        assert_eq!(
+            command,
+            Command {
+                program: "pwd".to_string(),
+                args: Vec::new(),
+            }
+        );
+    }
+
+    #[test]
+    fn parse_quoted_arguments() {
+        let command = parse("echo \"Hello World\" 'from umbra'").unwrap().unwrap();
+        assert_eq!(
+            command,
+            Command {
+                program: "echo".to_string(),
+                args: vec!["Hello World".to_string(), "from umbra".to_string()],
+            }
+        );
+    }
 }
