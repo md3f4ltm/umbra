@@ -2,9 +2,9 @@ use std::env;
 use std::io;
 use std::path::Path;
 
-use crate::parser::ParseCommand;
+use crate::parser::Command;
 
-pub fn execute(command: &ParseCommand) -> Option<io::Result<()>> {
+pub fn execute(command: &Command) -> Option<io::Result<()>> {
     match command.program.as_str() {
         "cd" => Some(cd(&command.args)),
         _ => None,
