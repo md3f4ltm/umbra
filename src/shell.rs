@@ -19,10 +19,11 @@ impl Shell {
     pub fn run(&mut self) -> io::Result<()> {
         loop {
             if let Some(command) = self.read_command()? {
-                match builtins::execute(&command) {
+                let status = match builtins::execute(&command) {
                     Some(result) => result?,
                     None => executor::execute(&command)?,
-                }
+                };
+                let _ = status;
             }
         }
     }
