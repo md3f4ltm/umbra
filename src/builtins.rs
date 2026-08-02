@@ -4,10 +4,17 @@ use std::path::Path;
 
 use crate::parser::Command;
 
-pub fn execute(command: &Command) -> Option<io::Result<i32>> {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BuiltinOutcome {
+    Status(i32),
+    Exit(i32),
+}
+
+pub fn execute(command: &Command, last_status: i32) -> Option<io::Result<BuiltinOutcome>> {
     match command.program.as_str() {
-        "cd" => Some(cd(&command.args)),
-        "pwd" => Some(pwd(&command.args)),
+        "cd" => Some(cd(&command.args).map(BuiltinOutcome::Status)),
+        "pwd" => Some(pwd(&command.args).map(BuiltinOutcome::Status)),
+        "exit" => Some(exit(&command.args, last_status)),
         _ => None,
     }
 }
@@ -66,6 +73,24 @@ fn change_directory(destination: &str) -> io::Result<i32> {
         Err(error) => {
             eprintln!("cd: {destination}: {error}");
             Ok(1)
+        }
+    }
+}
+
+fn exit(args: &[String], last_status: i32) -> io::Result<BuiltinOutcome> {
+    match args {
+        [] => Ok(BuiltinOutcome::Exit(last_status)),
+
+        [code] => match code.parse::<u8>() {
+            Ok(code) => Ok(BuiltinOutcome::Exit(code.into())),
+            Err(_) => {
+                eprintln!("umbra: exit: {code} numeric argument required");
+                Ok(BuiltinOutcome::Status(2))
+            }
+        },
+        _ => {
+            eprintln!("umbra: exit: too many arguments");
+            Ok(BuiltinOutcome::Status(1))
         }
     }
 }

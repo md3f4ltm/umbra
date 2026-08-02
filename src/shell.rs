@@ -1,4 +1,5 @@
 use crate::builtins;
+use crate::builtins::BuiltinOutcome;
 use crate::executor;
 use crate::parser::{parse, Command};
 use std::io::{self, Write};
@@ -16,14 +17,30 @@ impl Shell {
         }
     }
 
-    pub fn run(&mut self) -> io::Result<()> {
+    pub fn run(&mut self) -> io::Result<i32> {
+        let mut last_status = 0;
+
         loop {
-            if let Some(command) = self.read_command()? {
-                let status = match builtins::execute(&command) {
-                    Some(result) => result?,
-                    None => executor::execute(&command)?,
-                };
-                let _ = status;
+            let Some(command) = self.read_command()? else {
+                // EOF or Ctrl-D
+                return Ok(last_status);
+            };
+
+            let outcome = match builtins::execute(&command, last_status) {
+                Some(result) => result?,
+                None => {
+                    let status = executor::execute(&command)?;
+                    BuiltinOutcome::Status(status)
+                }
+            };
+
+            match outcome {
+                BuiltinOutcome::Status(status) => {
+                    last_status = status;
+                }
+                BuiltinOutcome::Exit(code) => {
+                    return Ok(code);
+                }
             }
         }
     }

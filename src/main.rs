@@ -5,8 +5,11 @@ mod shell;
 
 fn main() {
     let mut shell = shell::Shell::new();
-    if let Err(error) = shell.run() {
-        eprint!("umbra error: {error}");
-        std::process::exit(1);
+    match shell.run() {
+        Ok(status) => std::process::exit(status),
+        Err(error) => {
+            println!("umbra error: {error}");
+            std::process::exit(1);
+        }
     }
 }
